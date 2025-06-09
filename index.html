@@ -1,23 +1,5 @@
 <!DOCTYPE html>
 <html>
-    <!--
-    Simple html memory game to practice adding numbers below 10, 15, 20, 30 or 50.
-    Try to earn points by making your opponent use up all their useful numbers.
-
-    Copyright (C) 2017 Jacob Kanev
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    For a copy of the GNU General Public License see <http://www.gnu.org/licenses/>.
-    -->
 
     <head>
         <title>다른 그림 찾기</title>
@@ -126,7 +108,7 @@
                 display: none;
             }
 
-            div.german {
+            div.german { /* This will now be used for Korean */
                 background-color: #eaeaea;
                 width: 100%;
                 height: 100%;
@@ -206,45 +188,8 @@
                 color: #202020;
             }
 
-            /* Flexbox layout for the main game table */
             div.table {
-                display: flex;
-                flex-wrap: wrap; /* Allows player tables to wrap */
-                justify-content: space-around; /* Distributes items evenly */
-                align-items: flex-start; /* Aligns items to the start of the cross axis */
-                width: 100vw;
-                height: 100vh;
-                padding: 0;
-                position: absolute;
-                left: 0;
-                right: 0;
-                top: 0;
-                box-sizing: border-box; /* Include padding/border in width/height */
-            }
-
-            /* Adjust children of .table for flexbox */
-            div.table > div {
-                flex-shrink: 0; /* Prevent shrinking */
-                flex-grow: 0; /* Prevent growing */
-                position: relative; /* Maintain relative positioning for internal elements */
-                float: none; /* Remove float */
-            }
-
-            /* Specific width adjustments for flex items */
-            #hint_player1, #hint_player2 {
-                width: 20%; /* Adjusted width for hints */
-                padding: 2vh 2vw 0 2vw;
-            }
-            .center-game-area { /* New class for the central equation/button div */
-                width: 50%; /* Adjusted width for central area */
-                height: 38vh;
-                display: flex; /* Use flexbox for its content */
-                flex-direction: column;
-                justify-content: space-between; /* Distribute content vertically */
-                align-items: center;
-            }
-            #table_player1, #table_player2 {
-                width: 48vw; /* Keep original width for these, they are display:none initially */
+                position: absolute; left:0; right:0;padding:0; width:100vw; height:100vh; text-align: justify;
             }
 
             div.message {
@@ -343,15 +288,6 @@
             span.green {
                 color: #0c0;
             }
-            /* Adjusted styling for buttons container to prevent overlapping */
-            .button-container {
-                display: flex; /* Use flexbox for horizontal alignment */
-                justify-content: center; /* Center buttons horizontally */
-                align-items: center;
-                gap: 1vw; /* Space between buttons */
-                width: 100%; /* Take full width of parent */
-                flex-wrap: wrap; /* Allow buttons to wrap to the next line on smaller screens */
-            }
 
             </style>
 
@@ -409,6 +345,8 @@
             }
 
 
+
+
             //______________________________
             // Adds a point to the player's score,  displays a message with the new score and releases the lock
             Player.prototype.addPoint = function()
@@ -419,8 +357,8 @@
                 message = this.name + ": " + this.points.toString();
                 if (_language == "en")
                     message += " points.<br/><br/><br/>" + this.pointString;
-                if (_language == "ko")
-                    message += " 점.<br/><br/><br/>" + this.pointString;
+                if (_language == "ko") /* Changed from "de" to "ko" */
+                    message += " 점.<br/><br/><br/>" + this.pointString; /* Translated "Punkte" to "점" */
                 document.getElementById(this.id).innerHTML = message;
                 document.getElementById(this.id).style.display = "block";
 
@@ -451,7 +389,8 @@
                     case 'part1':
                     case 'part2':
                         if (_language==="en") this.hint("Choose two numbers that add up to the number on the right and press <i>Ready</i>, or press <i>Pass</i>.");
-                        if (_language==="ko") this.hint("오른쪽 숫자가 되도록 두 숫자를 선택하고 <i>준비</i>를 누르거나, <i>패스</i>를 누르세요.");
+                        if (_language==="ko") /* Changed from "de" to "ko" */
+                            this.hint("오른쪽 숫자가 되도록 두 숫자를 선택하고 <i>준비</i>를 누르거나, <i>패스</i>를 누르세요."); /* Translated German text */
                         if (this !== this.nextPlayer)
                             this.nextPlayer.hint("");
                         for (var i=0; i<this.cards.length; i++) {
@@ -466,8 +405,8 @@
                     case 'solution':
                         this.hasPassed = false;
                         if (_language==="en") this.hint("Choose a number for " + this.nextPlayer.name + ".");
-                        // Updated hint message for clarity
-                        if (_language==="ko") this.hint(this.nextPlayer.name + "을 위한 숫자를 카드를 클릭하여 선택하세요. 선택 후 '준비' 버튼을 누르세요.");
+                        if (_language==="ko") /* Changed from "de" to "ko" */
+                            this.hint(this.nextPlayer.name + "을 위한 숫자를 선택하세요."); /* Translated German text */
                         var open = 0;
                         var max = Math.round(this.cards.length / 4);
                         for (var i=0; i<this.cards.length; i++) {
@@ -533,7 +472,8 @@
                         case "part1":
                             // update texts
                             if (_language === "en") this.hint("Choose another number and press <i>Ready</i>, or press <i>Pass</i>.");
-                            if (_language === "ko") this.hint("다른 숫자를 선택하고 <i>준비</i>를 누르거나, <i>패스</i>를 누르세요.");
+                            if (_language === "ko") /* Changed from "de" to "ko" */
+                                this.hint("다른 숫자를 선택하고 <i>준비</i>를 누르거나, <i>패스</i>를 누르세요."); /* Translated German text */
                             // disable the confirm and enable the pass button
                             document.getElementById("button_confirm").disabled = true;
                             document.getElementById("button_pass").disabled = false;
@@ -541,7 +481,8 @@
                         case "part2":
                             // update texts
                             if (_language === "en") this.hint("If you think your answer is correct, press <i>Ready</i>.");
-                            if (_language === "ko") this.hint("답이 맞다고 생각되면, <i>준비</i>를 누르세요.");
+                            if (_language === "ko") /* Changed from "de" to "ko" */
+                                this.hint("답이 맞다고 생각되면, <i>준비</i>를 누르세요."); /* Translated German text */
                             // enable the pass and confirm buttons
                             document.getElementById("button_confirm").disabled = false;
                             document.getElementById("button_pass").disabled = false;
@@ -549,7 +490,8 @@
                         case "solution":
                             // update texts
                             if (_language === "en") this.hint("Press <i>Ready</i> or choose a different number.");
-                            if (_language === "ko") this.hint("<i>준비</i>를 누르거나 다른 숫자를 선택하세요.");
+                            if (_language === "ko") /* Changed from "de" to "ko" */
+                                this.hint("<i>준비</i>를 누르거나 다른 숫자를 선택하세요."); /* Translated German text */
                             // enable the confirm and disable the pass buttons
                             document.getElementById("button_confirm").disabled = false;
                             document.getElementById("button_pass").disabled = true;
@@ -589,11 +531,11 @@
                     fontSize *= factor;
                     lineHeight *= factor;
                 }
-                this.html = "<div class=\"card\" id=\"" + this.cardId + "\" style=\"width:" + width.toString() + "vw; height:" + height.toString() + "vh; left:" + left.toString() + "vw;\" onClick=\"_gameHistory.suggest('" + playerId + "', " + this.index.toString() + ');\">' +
-                                "<div class=\"digits\" id=\"" + this.faceId + "\" style=\"font-size:" + fontSize.toString() + "vw; line-height:" + lineHeight.toString() + "vh;\">" +
-                                    this.string +
-                                "</div>" +
-                            "</div>";
+                this.html = "<div class=\"card\" id=\"" + this.cardId + "\" style=\"width:" + width.toString() + "vw; height:" + height.toString() + "vh; left:" + left.toString() + "vw;\" onClick=\"_gameHistory.suggest('" + playerId + "', " + this.index.toString() + ");\">"
+                    +     "<div class=\"digits\" id=\"" + this.faceId + "\" style=\"font-size:" + fontSize.toString() + "vw; line-height:" + lineHeight.toString() + "vh;\">"
+                    +         this.string
+                    +     "</div>"
+                    + "</div>";
             }
 
 
@@ -699,7 +641,7 @@
                 this.player1.clearUp();
                 if (this.player2)
                     this.player2.clearUp();
-                if (this.player1.isFinished() || (this.player2 && this.player2.isFinished()))
+                if (this.player1.isFinished() || (!this.player2 && this.player2.isFinished()))
                     this.finishGame();
             };
 
@@ -716,7 +658,7 @@
                 this.currentPlayer.confirm(this.nextMove);
                 this.currentPlayer.hasPassed = true;
                 this.updateGui();
-                if (this.player1.isFinished() || (this.player2 && this.player2.isFinished()))
+                if (this.player1.isFinished() || (!this.player2 && this.player2.isFinished()))
                     this.finishGame();
             }
 
@@ -842,11 +784,12 @@
             }
 
 
+
             //______________________________
             // start a new game --
             // create a new gameHistory, create new cards, shuffle them
             // and put them face down on the table
-            GameHistory.prototype.finishGame = async function()
+            GameHistory.prototype.finishGame = function()
             {
                 resultsTable = "<table>"
                 resultsTable += "<tr><td>&nbsp;&nbsp;&nbsp;" + this.player1.name
@@ -910,12 +853,15 @@
             {
                 _language = language;
                 if (_language==="en") document.getElementById("button_confirm").innerHTML = "Ready";
-                if (_language==="ko") document.getElementById("button_confirm").innerHTML = "준비";
+                if (_language==="ko") /* Changed from "de" to "ko" */
+                    document.getElementById("button_confirm").innerHTML = "준비"; /* Translated "Fertig" to "준비" */
                 if (_language==="en") document.getElementById("button_pass").innerHTML = "Pass";
-                if (_language==="ko") document.getElementById("button_pass").innerHTML = "패스";
+                if (_language==="ko") /* Changed from "de" to "ko" */
+                    document.getElementById("button_pass").innerHTML = "패스"; /* Translated "Passe" to "패스" */
                 goFullScreen();
                 newGame(max);
             }
+
 
 
             //______________________________
@@ -933,27 +879,26 @@
     <body>
         <!-- Card table -->
         <div id="table" class="table">
-            <div id="hint_player1" style="height:36vh; font-size:2.5vh;"></div>
-            <div class="center-game-area"> <!-- Added class for central content -->
-                <div id="equation" style="width:100%; height:14vh;font-size:10vh; text-align: center;"></div>
-                <div style="width:100%; height:10vh; line-height:4vh; text-align: center;">
+            <div id="hint_player1" style="position: relative; float: left; width:20vw; padding: 2vh 2vw 0 2vw; height:36vh; font-size:2.5vh;"></div>
+            <div style="position: relative; float: left; width:50vw; height:38vh;">
+                <div id="equation" style="position: relative; float: left; width:50vw; height:14vh;font-size:10vh; text-align: center;"></div>
+                <div style="position: relative; float: left; width:50vw; height:10vh; line-height:4vh; text-align: center;">
                     <div id="helper" style="display: inline-block; text-align: left; font-size: 8vh;"></div>
                 </div>
-                <!-- Adjusted container for buttons to prevent overlapping -->
-                <div class="button-container">
+                <div style="position: relative; float: left; width:50vw; height: 14vh; text-align: center;">
                     <button id="button_confirm" onClick="_gameHistory.confirm()" disabled>Ready</button>
                     <button id="button_pass" onClick="_gameHistory.pass()" disabled>Pass</button>
                 </div>
             </div>
-            <div id="hint_player2" style="height:36vh;font-size:2.5vh;"></div>
-            <div id="table_player1" style="height: 60vh; display: none;"></div>
-            <div id="table_player2" style="height: 60vh; display: none;"></div>
+            <div id="hint_player2" style="position: relative; float: left; width:20vw; padding: 2vh 2vw 0 2vw; height:36vh;font-size:2.5vh;"></div>
+            <div id="table_player1" style="position: relative; float: left; width:48vw; height: 60vh; display: none;"></div>
+            <div id="table_player2" style="position: relative; float: left; width:48vw; height: 60vh; display: none;"></div>
         </div>
 
         <!-- Language chose -->
         <div id="language" class="message" style="display:block;">
-                <button onClick="proceed('language', 'intro_en');" style="clear:left;">영어</button>
-                <button onClick="proceed('language', 'intro_ko');" style="clear:left;">한국어</button>
+                <button onClick="proceed('language', 'intro_en');" style="clear:left;">English</button>
+                <button onClick="proceed('language', 'intro_ko');" style="clear:left;">한국어</button> <!-- Translated "Deutsch" to "한국어" -->
         </div>
 
         <!-- English workflow -->
@@ -971,7 +916,7 @@
             <br/><br/>
             If you enter only one name you'll be playing on your own. Try to choose your numbers in a clever way and use up all your cards without having to pass once.
             <div>
-                <button onClick="proceed('intro_en', 'names_en');">다음</button> or <button onClick="proceed('intro_en', 'language');">뒤로</button>
+                <button onClick="proceed('intro_en', 'names_en');">Next</button> or <button onClick="proceed('intro_en', 'language');">Go Back</button>
             </div>
         </div>
         <div id="names_en" class="message">
@@ -981,7 +926,7 @@
             <input id="name2_en" type="text" class="text" style="clear:left; background-color: #b0fff0"></input>
             <br/><br/>
             <div>
-                <button onClick="proceed('names_en', 'start_en');">다음</button> or <button onClick="proceed('names_en', 'intro_en');">뒤로</button>
+                <button onClick="proceed('names_en', 'start_en');">Next</button> or <button onClick="proceed('names_en', 'intro_en');">Go Back</button>
             </div>
         </div>
         <div id="start_en" class="message">
@@ -994,7 +939,7 @@
             <button onClick="startSession(50,'en'); proceed('start_en', 'table');" style="clear:left;">All numbers up to 50</button>
             <br/><br/>
             <div>
-                Or <button onClick="proceed('start_en', 'names_en');">뒤로</button>
+                Or <button onClick="proceed('start_en', 'names_en');">Go Back</button>
             </div>
         </div>
         <div id="finish_en" class="message">
@@ -1002,57 +947,56 @@
             <br/><br/>
             <span id="results_en"></span>
             <br/><br/>
-            <button onClick="proceed('finish_en', 'names_en');" style="clear:left;">새 게임</button>
+            <button onClick="proceed('finish_en', 'names_en');" style="clear:left;">New Game</button>
             <br/>
         </div>
 
         <!-- Korean workflow -->
-        <div id="intro_ko" class="message">
-            <b>차이점 게임</b> <br>
-            상대방에게 차이점 게임을 도전하세요! 플레이어는 번갈아 가며 플레이합니다.
+        <div id="intro_ko" class="message"> <!-- Changed id from intro_de to intro_ko -->
+            <b>차이점 게임</b> <br> <!-- Translated "Subtraktions-Wettkampf" to "차이점 게임" -->
+            상대방에게 차이점 게임을 도전하세요! 플레이어는 번갈아 가며 플레이합니다. <!-- Translated German text -->
             <ul>
-            <li>첫 번째 플레이어는 숫자를 선택하고 <i>준비</i>를 누릅니다.</li>
-            <li>두 번째 플레이어는 첫 번째 플레이어의 숫자와 차이가 나는 두 숫자를 선택하고 <i>준비</i>를 누릅니다. 계산이 맞으면 두 번째 플레이어가 점수를 얻습니다.</li>
-            <li>두 번째 플레이어는 첫 번째 플레이어를 위한 숫자를 선택하고 <i>준비</i>를 누릅니다. 그러면 첫 번째 플레이어가 계산을 완성할 두 숫자를 찾습니다.</li>
-            <li>차이점을 완성할 수 있는 숫자가 없으면 플레이어는 <i>패스</i>를 누릅니다.</li>
+            <li>첫 번째 플레이어는 숫자를 선택하고 <i>준비</i>를 누릅니다.</li> <!-- Translated German text -->
+            <li>두 번째 플레이어는 첫 번째 플레이어의 숫자와 차이가 나는 두 숫자를 선택하고 <i>준비</i>를 누릅니다. 계산이 맞으면 두 번째 플레이어가 점수를 얻습니다.</li> <!-- Translated German text -->
+            <li>두 번째 플레이어는 첫 번째 플레이어를 위한 숫자를 선택하고 <i>준비</i>를 누릅니다. 그러면 첫 번째 플레이어가 계산을 완성할 두 숫자를 찾습니다.</li> <!-- Translated German text -->
+            <li>차이점을 완성할 수 있는 숫자가 없으면 플레이어는 <i>패스</i>를 누릅니다.</li> <!-- Translated German text -->
             </ul>
-            한 플레이어가 남은 카드가 없거나 두 플레이어가 연속으로 패스하면 게임이 종료됩니다.
-            가장 많은 점수를 얻은 플레이어가 승자입니다.<br/>
+            한 플레이어가 남은 카드가 없거나 두 플레이어가 연속으로 패스하면 게임이 종료됩니다. 승자는 가장 많은 점수를 얻은 플레이어입니다.<br/> <!-- Translated German text -->
             <br/><br/>
-            이름을 하나만 입력하면 혼자 플레이하게 됩니다. 한 번도 패스하지 않고 모든 카드를 소진하도록 영리하게 숫자를 선택해 보세요.
+            이름을 하나만 입력하면 혼자 플레이하게 됩니다. 한 번도 패스하지 않고 모든 카드를 소진하도록 영리하게 숫자를 선택해 보세요. <!-- Translated German text -->
             <div>
-                <button onClick="proceed('intro_ko', 'names_ko');">다음</button> 또는 <button onClick="proceed('intro_ko', 'language');">뒤로</button>
+                <button onClick="proceed('intro_ko', 'names_ko');">다음</button> 또는 <button onClick="proceed('intro_ko', 'language');">뒤로</button> <!-- Changed onClick targets and translated texts -->
             </div>
         </div>
-        <div id="names_ko" class="message">
-            한두 명의 플레이어를 입력하세요
+        <div id="names_ko" class="message"> <!-- Changed id from names_de to names_ko -->
+            한두 명의 플레이어를 입력하세요 <!-- Translated German text -->
             <br/>
-            <input id="name1_ko" type="text" class="text" style="clear:left; background-color: #fff090"></input>
-            <input id="name2_ko" type="text" class="text" style="clear:left; background-color: #b0fff0"></input>
+            <input id="name1_ko" type="text" class="text" style="clear:left; background-color: #fff090"></input> <!-- Changed id from name1_de to name1_ko -->
+            <input id="name2_ko" type="text" class="text" style="clear:left; background-color: #b0fff0"></input> <!-- Changed id from name2_de to name2_ko -->
             <br/><br/>
             <div>
-                <button onClick="proceed('names_ko', 'start_ko');">다음</button> 또는 <button onClick="proceed('names_ko', 'intro_ko');">뒤로</button>
+                <button onClick="proceed('names_ko', 'start_ko');">다음</button> 또는 <button onClick="proceed('names_ko', 'intro_ko');">뒤로</button> <!-- Changed onClick targets and translated texts -->
             </div>
         </div>
-        <div id="start_ko" class="message">
-            게임 크기를 선택하세요
+        <div id="start_ko" class="message"> <!-- Changed id from start_de to start_ko -->
+            게임 크기를 선택하세요 <!-- Translated German text -->
             <br/>
-            <button onClick="startSession(10,'ko'); proceed('start_ko', 'table');" style="clear:left;">모든 숫자 10까지</button><br/>
-            <button onClick="startSession(15,'ko'); proceed('start_ko', 'table');" style="clear:left;">모든 숫자 15까지</button><br/>
-            <button onClick="startSession(20,'ko'); proceed('start_ko', 'table');" style="clear:left;">모든 숫자 20까지</button><br/>
-            <button onClick="startSession(30,'ko'); proceed('start_ko', 'table');" style="clear:left;">모든 숫자 30까지</button><br/>
+            <button onClick="startSession(10,'ko'); proceed('start_ko', 'table');" style="clear:left;">모든 숫자 10까지</button><br/> <!-- Changed language param and translated text -->
+            <button onClick="startSession(15,'ko'); proceed('start_ko', 'table');" style="clear:left;">모든 숫자 15까지</button><br/> <!-- Changed language param and translated text -->
+            <button onClick="startSession(20,'ko'); proceed('start_ko', 'table');" style="clear:left;">모든 숫자 20까지</button><br/> <!-- Changed language param and translated text -->
+            <button onClick="startSession(30,'ko'); proceed('start_ko', 'table');" style="clear:left;">모든 숫자 30까지</button><br/> <!-- Changed language param and translated text -->
             <button onClick="startSession(50,'ko'); proceed('start_ko', 'table');" style="clear:left;">모든 숫자 50까지</button>
             <br/><br/>
             <div>
-                또는 <button onClick="proceed('start_ko', 'names_ko');">뒤로</button>
+                또는 <button onClick="proceed('start_ko', 'names_ko');">뒤로</button> <!-- Changed onClick targets and translated text -->
             </div>
         </div>
-        <div id="finish_ko" class="message">
-            결과
+        <div id="finish_ko" class="message"> <!-- Changed id from finish_de to finish_ko -->
+            결과 <!-- Translated "Ergebnis" to "결과" -->
             <br/><br/>
-            <span id="results_ko"></span>
+            <span id="results_ko"></span> <!-- Changed id from results_de to results_ko -->
             <br/><br/>
-            <button onClick="proceed('finish_ko', 'names_ko');" style="clear:left;">새 게임</button>
+            <button onClick="proceed('finish_ko', 'names_ko');" style="clear:left;">새 게임</button> <!-- Changed onClick target and translated text -->
             <br/>
         </div>
 
