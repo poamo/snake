@@ -1,269 +1,1063 @@
 <!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <title>차이 게임 (한국어/영어)</title>
-  <style>
-    body { font-family: sans-serif; margin: 20px; }
-    #language-selector { margin-bottom: 20px; }
-    button { padding: 8px 16px; margin-right: 8px; }
-    #game-area { max-width: 600px; margin: 0 auto; }
-    .card { display: inline-block; width: 60px; height: 80px; margin: 10px; border: 1px solid #ccc; text-align: center; line-height: 80px; font-size: 24px; cursor: pointer; background: #f9f9f9; }
-    .selected { background: #cfc; }
-    #hint { color: #666; font-style: italic; margin-top: 20px; }
-    #result { margin-top: 20px; font-weight: bold; }
-    #player-names { margin-bottom: 10px; }
-    .player-score { font-weight: bold; margin-right: 15px; }
-    .pass-btn { margin-left: 10px; }
-    #start-btn { margin-top: 10px; }
-    #game-size { margin-bottom: 10px; }
-  </style>
-</head>
-<body>
-  <div id="language-selector">
-    <button id="btn-en">English</button>
-    <button id="btn-ko" style="background: #cfc;">한국어</button>
-  </div>
-  <div id="game-area">
-    <p id="challenge-text"></p>
-    <p id="first-player-text"></p>
-    <p id="second-player-text"></p>
-    <p id="correct-equation-text"></p>
-    <p id="game-over-text"></p>
-    <p id="enter-names-text"></p>
-    <p id="select-size-text"></p>
-    <div id="player-names">
-      <input type="text" id="player1" placeholder="플레이어1">
-      <input type="text" id="player2" placeholder="플레이어2">
-      <button id="start-btn">시작</button>
-    </div>
-    <div id="game-size">
-      <select id="size">
-        <option value="7">7장</option>
-        <option value="10">10장</option>
-        <option value="13">13장</option>
-      </select>
-    </div>
-    <div id="cards"></div>
-    <div id="result"></div>
-    <div id="scores">
-      <span id="score1" class="player-score"></span>
-      <span id="score2" class="player-score"></span>
-      <button id="pass-btn" class="pass-btn">패스</button>
-    </div>
-    <p id="hint"></p>
-  </div>
+<html>
+    <!--
+    Simple html memory game to practice adding numbers below 10, 15, 20, 30 or 50.
+    Try to earn points by making your opponent use up all their useful numbers.
 
-  <script>
-    // 언어별 메시지
-    const messages = {
-      en: {
-        challenge: "Challenge your opponent to a differences game! Players take turns.",
-        firstPlayerSelect: "The first player selects a number and presses.",
-        secondPlayerSelect: "The second player selects two numbers whose difference equals the first player's number and presses.",
-        correctEquation: "If the equation is correct, the second player gets a point.",
-        gameOver: "Game over when no cards left or both players pass consecutively. The player with the most points wins.",
-        enterNames: "Enter one or two player names.",
-        selectSize: "Select a game size.",
-        hint: "Select two numbers so that the number on the right is correct and press.",
-        pass: "Pass",
-        start: "Start",
-        winner: "Winner: ",
-        draw: "Draw!",
-        player1: "Player 1",
-        player2: "Player 2",
-        score: "Score: "
-      },
-      ko: {
-        challenge: "상대방과 차이 게임에 도전하세요! 플레이어는 번갈아 가며 플레이합니다.",
-        firstPlayerSelect: "첫 번째 플레이어가 숫자를 선택하고 누릅니다.",
-        secondPlayerSelect: "두 번째 플레이어가 두 숫자를 선택하여 첫 번째 플레이어의 숫자 차이를 만듭니다.",
-        correctEquation: "방정식이 맞으면 두 번째 플레이어가 점수를 얻습니다.",
-        gameOver: "플레이어가 카드를 모두 사용했거나 두 플레이어가 연속으로 패스하면 게임이 종료됩니다. 가장 많은 점수를 얻은 플레이어가 승리합니다.",
-        enterNames: "한 명 또는 두 명의 플레이어 이름을 입력하세요.",
-        selectSize: "게임 크기를 선택하세요.",
-        hint: "두 숫자를 선택하여 오른쪽 숫자를 맞추고 누르세요.",
-        pass: "패스",
-        start: "시작",
-        winner: "승자: ",
-        draw: "무승부!",
-        player1: "플레이어1",
-        player2: "플레이어2",
-        score: "점수: "
-      }
-    };
+    Copyright (C) 2017 Jacob Kanev
 
-    let currentLanguage = 'ko'; // 기본 언어: 한국어
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    // 언어 변경 함수
-    function changeLanguage(lang) {
-      currentLanguage = lang;
-      document.getElementById('challenge-text').textContent = messages[lang].challenge;
-      document.getElementById('first-player-text').textContent = messages[lang].firstPlayerSelect;
-      document.getElementById('second-player-text').textContent = messages[lang].secondPlayerSelect;
-      document.getElementById('correct-equation-text').textContent = messages[lang].correctEquation;
-      document.getElementById('game-over-text').textContent = messages[lang].gameOver;
-      document.getElementById('enter-names-text').textContent = messages[lang].enterNames;
-      document.getElementById('select-size-text').textContent = messages[lang].selectSize;
-      document.getElementById('hint').textContent = messages[lang].hint;
-      document.getElementById('pass-btn').textContent = messages[lang].pass;
-      document.getElementById('start-btn').textContent = messages[lang].start;
-      document.getElementById('player1').placeholder = messages[lang].player1;
-      document.getElementById('player2').placeholder = messages[lang].player2;
-      // 버튼 스타일 초기화
-      document.getElementById('btn-en').style.background = '';
-      document.getElementById('btn-ko').style.background = '';
-      // 선택된 언어 버튼 강조
-      if (lang === 'en') document.getElementById('btn-en').style.background = '#cfc';
-      else document.getElementById('btn-ko').style.background = '#cfc';
-    }
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-    // 버튼 이벤트
-    document.getElementById('btn-en').addEventListener('click', () => changeLanguage('en'));
-    document.getElementById('btn-ko').addEventListener('click', () => changeLanguage('ko'));
+    For a copy of the GNU General Public License see <http://www.gnu.org/licenses/>.
+    -->
 
-    // 초기 언어 설정
-    changeLanguage(currentLanguage);
+    <head>
+        <title>다른 그림 찾기</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <style>
 
-    // 게임 로직
-    let cards = [];
-    let selectedCards = [];
-    let currentPlayer = 1;
-    let player1Name = messages[currentLanguage].player1;
-    let player2Name = messages[currentLanguage].player2;
-    let player1Score = 0;
-    let player2Score = 0;
-    let gameStarted = false;
-    let consecutivePass = 0;
+            html, body {
+                background-color: #eef;
+                width: 100vw;
+                height: 100vh;
+                margin: 0;
+                padding: 0;
+                border: 0;
+                font-family: Sans-Serif;
+                overflow: hidden;
+            }
 
-    function startGame() {
-      const size = parseInt(document.getElementById('size').value);
-      cards = [];
-      selectedCards = [];
-      currentPlayer = 1;
-      player1Score = 0;
-      player2Score = 0;
-      consecutivePass = 0;
-      gameStarted = true;
-      document.getElementById('result').textContent = '';
-      document.getElementById('scores').style.display = 'block';
-      document.getElementById('pass-btn').style.display = 'inline-block';
+            button {
+                display: inline;
+                margin: 1vw;
+                padding: 1vw;
+                border: 1px solid #CCCCCC;
+                -webkit-box-shadow: #FEFFFF 0px 2px 2px ;
+                -moz-box-shadow: #FEFFFF 0px 2px 2px ;
+                box-shadow: #FEFFFF 0px 2px 2px ;
+                -webkit-border-radius: 10px;
+                -moz-border-radius: 10px;
+                border-radius: 10px;
+                padding: 10px 10px 10px 10px;
+                text-shadow: 0px 2px 2px rgba(255,255,255,1);
+                color: #4A4A4A;
+                background-color: #F7F5F6;
+                background-image: -webkit-gradient(linear, left top, left bottom, from(#F7F5F6), to(#DDDDDD));
+                background-image: -webkit-linear-gradient(top, #F7F5F6, #DDDDDD);
+                background-image: -moz-linear-gradient(top, #F7F5F6, #DDDDDD);
+                background-image: -ms-linear-gradient(top, #F7F5F6, #DDDDDD);
+                background-image: -o-linear-gradient(top, #F7F5F6, #DDDDDD);
+                background-image: linear-gradient(to bottom, #F7F5F6, #DDDDDD);
+                filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#F7F5F6, endColorstr=#DDDDDD);
+                white-space: normal;
+                font-size: 3vmin;
+            }
 
-      player1Name = document.getElementById('player1').value || messages[currentLanguage].player1;
-      player2Name = document.getElementById('player2').value || messages[currentLanguage].player2;
+            button:hover{
+                border:1px solid #ADADAD;
+                background-color: #E0E0E0;
+                background-image: -webkit-gradient(linear, left top, left bottom, from(#E0E0E0), to(#BDBBBC));
+                background-image: -webkit-linear-gradient(top, #E0E0E0, #BDBBBC);
+                background-image: -moz-linear-gradient(top, #E0E0E0, #BDBBBC);
+                background-image: -ms-linear-gradient(top, #E0E0E0, #BDBBBC);
+                background-image: -o-linear-gradient(top, #E0E0E0, #BDBBBC);
+                background-image: linear-gradient(to bottom, #E0E0E0, #BDBBBC);
+                filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#E0E0E0, endColorstr=#BDBBBC);
+            }
 
-      // 카드 생성
-      for (let i = 1; i <= 20; i++) {
-        cards.push(i);
-      }
-      // 카드 섞기
-      for (let i = cards.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [cards[i], cards[j]] = [cards[j], cards[i]];
-      }
-      cards = cards.slice(0, size);
+            button:active{
+                border:1px solid #ADADAD;
+                background-color: #E0E0E0;
+                background-image: -webkit-gradient(linear, left top, left bottom, from(#BDBBBC), to(#E0E0E0));
+                background-image: -webkit-linear-gradient(top, #BDBBBC, #E0E0E0);
+                background-image: -moz-linear-gradient(top, #BDBBBC, #E0E0E0);
+                background-image: -ms-linear-gradient(top, #BDBBBC, #E0E0E0);
+                background-image: -o-linear-gradient(top, #BDBBBC, #E0E0E0);
+                background-image: linear-gradient(to bottom, #BDBBBC, #E0E0E0);
+                filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#BDBBBC, endColorstr=#E0E0E0);
+            }
 
-      renderCards();
-      updateScores();
-    }
+            button:disabled{
+                color: #E0E0E0;
+                border:1px solid #ADADAD;
+                background-color: #E0E0E0;
+                background-image: -webkit-gradient(linear, left top, left bottom, from(#E0E0E0), to(#E0E0E0));
+                background-image: -webkit-linear-gradient(top, #E0E0E0, #E0E0E0);
+                background-image: -moz-linear-gradient(top, #E0E0E0, #E0E0E0);
+                background-image: -ms-linear-gradient(top, #E0E0E0, #E0E0E0);
+                background-image: -o-linear-gradient(top, #E0E0E0, #E0E0E0);
+                background-image: linear-gradient(to bottom, #E0E0E0, #E0E0E0);
+                filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#E0E0E0, endColorstr=#E0E0E0);
+            }
 
-    function renderCards() {
-      const container = document.getElementById('cards');
-      container.innerHTML = '';
-      cards.forEach((num, idx) => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.dataset.index = idx;
-        card.textContent = num;
-        card.addEventListener('click', () => selectCard(idx));
-        container.appendChild(card);
-      });
-    }
+            div.dots {
+                font-weight: bold;
+                background-color: #eaeaea;
+                width: 100%;
+                height: 100%;
+                -webkit-border-radius: 15px;
+                -moz-border-radius: 15px;
+                border-radius: 15px;
+                text-align: center;
+                vertical-align: middle;
+                color: #a00;
+                display: none;
+            }
 
-    function selectCard(idx) {
-      if (!gameStarted) return;
-      const card = document.querySelector(`.card[data-index="${idx}"]`);
-      if (selectedCards.includes(idx)) {
-        selectedCards = selectedCards.filter(i => i !== idx);
-        card.classList.remove('selected');
-      } else {
-        if (selectedCards.length < 2) {
-          selectedCards.push(idx);
-          card.classList.add('selected');
-        }
-      }
-    }
+            div.english {
+                background-color: #eaeaea;
+                width: 100%;
+                height: 100%;
+                -webkit-border-radius: 15px;
+                -moz-border-radius: 15px;
+                border-radius: 15px;
+                text-align: center;
+                vertical-align: middle;
+                color: #060;
+                display: none;
+            }
 
-    function play() {
-      if (!gameStarted || selectedCards.length === 0) return;
-      if (selectedCards.length === 1) {
-        // 첫 번째 플레이어: 숫자 선택
-        const num = cards[selectedCards[0]];
-        document.getElementById('result').textContent = `${currentPlayer === 1 ? player1Name : player2Name}: ${num}`;
-        selectedCards = [];
-        renderCards();
-      } else if (selectedCards.length === 2) {
-        // 두 번째 플레이어: 두 숫자 선택
-        const num1 = cards[selectedCards[0]];
-        const num2 = cards[selectedCards[1]];
-        const diff = Math.abs(num1 - num2);
-        const lastNum = parseInt(document.getElementById('result').textContent.split(': ')[1]);
-        if (diff === lastNum) {
-          // 맞춤
-          if (currentPlayer === 1) player2Score++;
-          else player1Score++;
-          updateScores();
-          document.getElementById('result').textContent = `${currentPlayer === 1 ? player2Name : player1Name} ${messages[currentLanguage].correctEquation}`;
-        } else {
-          // 틀림
-          document.getElementById('result').textContent = `${messages[currentLanguage].hint}`;
-        }
-        selectedCards = [];
-        renderCards();
-      }
-    }
+            div.german {
+                background-color: #eaeaea;
+                width: 100%;
+                height: 100%;
+                -webkit-border-radius: 15px;
+                -moz-border-radius: 15px;
+                border-radius: 15px;
+                text-align: center;
+                vertical-align: middle;
+                color: #060;
+                display: none;
+            }
 
-    function pass() {
-      if (!gameStarted) return;
-      consecutivePass++;
-      if (consecutivePass >= 2) {
-        endGame();
-      } else {
-        currentPlayer = currentPlayer === 1 ? 2 : 1;
-        document.getElementById('result').textContent = `${messages[currentLanguage].pass}`;
-      }
-    }
+            div.digits {
+                background-color: #eaeaea;
+                width: 100%;
+                height: 100%;
+                -webkit-border-radius: 15px;
+                -moz-border-radius: 15px;
+                border-radius: 15px;
+                text-align: center;
+                vertical-align: middle;
+                color: #00a;
+            }
 
-    function endGame() {
-      gameStarted = false;
-      let winner;
-      if (player1Score > player2Score) winner = player1Name;
-      else if (player2Score > player1Score) winner = player2Name;
-      else winner = null;
-      document.getElementById('result').textContent = winner ? `${messages[currentLanguage].winner}${winner}` : messages[currentLanguage].draw;
-      document.getElementById('pass-btn').style.display = 'none';
-    }
+            div.card {
+                position: relative;
+                float: left;
+                border: 0.1vw solid #CCCCCC;
+                margin: 0.3vw;
+                -webkit-box-shadow: #FEFFFF 0px 2px 2px ;
+                -moz-box-shadow: #FEFFFF 0px 2px 2px ;
+                box-shadow: #FEFFFF 0px 2px 2px ;
+                -webkit-border-radius: 20px;
+                -moz-border-radius: 20px;
+                border-radius: 20px;
+                padding: 0.3vw;
+                text-shadow: 0px 2px 2px rgba(255,255,255,1);
+                color: #4A4A4A;
+                background-color: #F7F5F6;
+                background-image: -webkit-gradient(linear, left top, left bottom, from(#F7F5F6), to(#DDDDDD));
+                background-image: -webkit-linear-gradient(top, #F7F5F6, #DDDDDD);
+                background-image: -moz-linear-gradient(top, #F7F5F6, #DDDDDD);
+                background-image: -ms-linear-gradient(top, #F7F5F6, #DDDDDD);
+                background-image: -o-linear-gradient(top, #F7F5F6, #DDDDDD);
+                background-image: linear-gradient(to bottom, #F7F5F6, #DDDDDD);
+                filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#F7F5F6, endColorstr=#DDDDDD);
+                white-space: normal;
+                vertical-align: top;
+            }
 
-    function updateScores() {
-      document.getElementById('score1').textContent = `${player1Name}: ${messages[currentLanguage].score}${player1Score}`;
-      document.getElementById('score2').textContent = `${player2Name}: ${messages[currentLanguage].score}${player2Score}`;
-    }
+            div.card:hover{
+                border: 0.1vw solid #ADADAD;
+                background-color: #E0E0E0;
+                background-image: -webkit-gradient(linear, left top, left bottom, from(#E0E0E0), to(#BDBBBC));
+                background-image: -webkit-linear-gradient(top, #E0E0E0, #BDBBBC);
+                background-image: -moz-linear-gradient(top, #E0E0E0, #BDBBBC);
+                background-image: -ms-linear-gradient(top, #E0E0E0, #BDBBBC);
+                background-image: -o-linear-gradient(top, #E0E0E0, #BDBBBC);
+                background-image: linear-gradient(to bottom, #E0E0E0, #BDBBBC);
+                filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#E0E0E0, endColorstr=#BDBBBC);
+            }
 
-    function showHint(msg) {
-      document.getElementById('hint').textContent = msg;
-    }
+            div.card:active{
+                border: 0.1vw solid #ADADAD;
+                background-color: #E0E0E0;
+                background-image: -webkit-gradient(linear, left top, left bottom, from(#BDBBBC), to(#E0E0E0));
+                background-image: -webkit-linear-gradient(top, #BDBBBC, #E0E0E0);
+                background-image: -moz-linear-gradient(top, #BDBBBC, #E0E0E0);
+                background-image: -ms-linear-gradient(top, #BDBBBC, #E0E0E0);
+                background-image: -o-linear-gradient(top, #BDBBBC, #E0E0E0);
+                background-image: linear-gradient(to bottom, #BDBBBC, #E0E0E0);
+                filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#BDBBBC, endColorstr=#E0E0E0);
+            }
 
-    // 이벤트 리스너
-    document.getElementById('start-btn').addEventListener('click', startGame);
-    document.getElementById('pass-btn').addEventListener('click', pass);
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && gameStarted) play();
-    });
-    // 카드 클릭 시 play() 호출을 위해, 실제 게임에서는 버튼 추가 or 더블클릭 등으로 처리 가능
-    // 여기서는 Enter 키로 대체
+            div {
+                text-shadow: 0px 2px 2px rgba(255,255,255,1);
+                color: #202020;
+            }
 
-    // 초기화
-    updateScores();
-  </script>
-</body>
+            /* Flexbox layout for the main game table */
+            div.table {
+                display: flex;
+                flex-wrap: wrap; /* Allows player tables to wrap */
+                justify-content: space-around; /* Distributes items evenly */
+                align-items: flex-start; /* Aligns items to the start of the cross axis */
+                width: 100vw;
+                height: 100vh;
+                padding: 0;
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 0;
+                box-sizing: border-box; /* Include padding/border in width/height */
+            }
+
+            /* Adjust children of .table for flexbox */
+            div.table > div {
+                flex-shrink: 0; /* Prevent shrinking */
+                flex-grow: 0; /* Prevent growing */
+                position: relative; /* Maintain relative positioning for internal elements */
+                float: none; /* Remove float */
+            }
+
+            /* Specific width adjustments for flex items */
+            #hint_player1, #hint_player2 {
+                width: 20%; /* Adjusted width for hints */
+                padding: 2vh 2vw 0 2vw;
+            }
+            .center-game-area { /* New class for the central equation/button div */
+                width: 50%; /* Adjusted width for central area */
+                height: 38vh;
+                display: flex; /* Use flexbox for its content */
+                flex-direction: column;
+                justify-content: space-between; /* Distribute content vertically */
+                align-items: center;
+            }
+            #table_player1, #table_player2 {
+                width: 48vw; /* Keep original width for these, they are display:none initially */
+            }
+
+            div.message {
+                position: relative;
+                width:78vw;
+                height:77vh;
+                left:1%;
+                top:1%;
+                padding: 10vh 10vw 10vh 10vw;
+                font-size: 3vmin;
+                display: none;
+                border: 1px solid #CCCCCC;
+                -webkit-box-shadow: #FEFFFF 0px 2px 2px ;
+                -moz-box-shadow: #FEFFFF 0px 2px 2px ;
+                box-shadow: #FEFFFF 0px 2px 2px ;
+                -webkit-border-radius: 20px;
+                -moz-border-radius: 20px;
+                border-radius: 20px;
+                text-shadow: 0px 2px 2px rgba(255,255,255,1);
+                color: #4A4A4A;
+                background-color: #F7F5F6;
+                background-image: -webkit-gradient(linear, left top, left bottom, from(#F7F5F6), to(#DDDDDD));
+                background-image: -webkit-linear-gradient(top, #F7F5F6, #DDDDDD);
+                background-image: -moz-linear-gradient(top, #F7F5F6, #DDDDDD);
+                background-image: -ms-linear-gradient(top, #F7F5F6, #DDDDDD);
+                background-image: -o-linear-gradient(top, #F7F5F6, #DDDDDD);
+                background-image: linear-gradient(to bottom, #F7F5F6, #DDDDDD);
+                filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#F7F5F6, endColorstr=#DDDDDD);
+                white-space: normal;
+                vertical-align: top;
+            }
+
+            div.result {
+                position: relative; float: left; padding: 0.5em; margin: 0.1em;
+                display: none;
+                border: 1px solid #CCCCCC;
+                -webkit-box-shadow: #FEFFFF 0px 2px 2px ;
+                -moz-box-shadow: #FEFFFF 0px 2px 2px ;
+                box-shadow: #FEFFFF 0px 2px 2px ;
+                -webkit-border-radius: 10px;
+                -moz-border-radius: 10px;
+                border-radius: 10px;
+            }
+
+            input.text {
+                font-family: verdana, arial, sansserif;
+                font-size: 3vmin;
+                position: relative;
+                float: left;
+                border: 0.1px solid #CCCCCC;
+                margin: 1vw;
+                padding: 1vw;
+                -webkit-box-shadow: #FEFFFF 0px 2px 2px ;
+                -moz-box-shadow: #FEFFFF 0px 2px 2px ;
+                box-shadow: #FEFFFF 0px 2px 2px ;
+                -webkit-border-radius: 20px;
+                -moz-border-radius: 20px;
+                border-radius: 20px;
+                text-shadow: 0px 2px 2px rgba(255,255,255,1);
+                color: #000000;
+                background-color: #F7F5F6;
+            }
+
+            div.player {
+                font-size: 3vmin;
+                padding: 5vw;
+                position: absolute;
+                left:33vw;
+                width:20vw;
+                top:13vmin;
+                height: 20vh;
+                display: none;
+                -webkit-box-shadow: #FEFFFF 0px 2px 2px ;
+                -moz-box-shadow: #FEFFFF 0px 2px 2px ;
+                box-shadow: 0px 0px 50px  #505050;
+                -webkit-border-radius: 30px;
+                -moz-border-radius: 30px;
+                border-radius: 30px;
+                text-shadow: 0px 2px 2px rgba(255,255,255,1);
+            }
+
+            span.stars {
+                text-shadow: 0px 0px 1px #400;
+                color: #fb0;
+                font-size: 5vmin;
+            }
+
+            span.blue {
+                color: #00c;
+            }
+
+            span.red {
+                color: #c00;
+            }
+
+            span.green {
+                color: #0c0;
+            }
+            /* Adjusted styling for buttons container to prevent overlapping */
+            .button-container {
+                display: flex; /* Use flexbox for horizontal alignment */
+                justify-content: center; /* Center buttons horizontally */
+                align-items: center;
+                gap: 1vw; /* Space between buttons */
+                width: 100%; /* Take full width of parent */
+                flex-wrap: wrap; /* Allow buttons to wrap to the next line on smaller screens */
+            }
+
+            </style>
+
+        <script type="text/javascript">
+            <!--
+
+            // debug mode
+            var _debugMode = false;
+
+            // global gameHistory object
+            var _gameHistory = null;
+            var _equation = null;
+            var _globalLock = false;
+            var _quitFullScreen = false;
+            var _language = "en"; // Default language set to English
+
+
+            //______________________________
+            // Class representing a single player.
+            // Used to count points, colours and names.
+            function Player(name, colour, id, max, amount)
+            {
+                if (_debugMode)
+                    alert("Player( name=" + name.toString() + ", colour=" + colour.toString() + ", id=" + id.toString(), + ", max=" + max.toString() + ")");
+                this.name = name;
+                this.colour = colour;
+                this.id = id;
+                this.points = 0;
+                this.pointString = "";
+                this.nextPlayer = 0;
+                this.cards = [];
+                cardString = "";
+                cols = Math.round(Math.sqrt(amount+1));
+                rows = Math.ceil((amount+1) / cols);
+                var i = 0; // counter for cards
+                var n = 0; // counter for numbers on cards
+                finished = false;
+                while (!finished) {
+                    for (k=0; k<2 && !finished; k++) {
+                        if (Math.random() > 0.5) {
+                            this.cards.push(new Card(n, i, rows, cols, this.id));
+                            cardString += this.cards[i].html;
+                            i++;
+                            if (i>amount) finished = true;
+                        }
+                    }
+                    n = Math.round(i*max/(amount-1));
+                }
+                this.openCards = amount;
+                this.hasPassed = false;
+                document.getElementById("table_" + this.id).innerHTML = cardString;
+                document.getElementById("table_" + this.id).style.display = "block";
+                document.getElementById(this.id).style.backgroundColor = this.colour;
+                this.hint("");
+            }
+
+
+            //______________________________
+            // Adds a point to the player's score,  displays a message with the new score and releases the lock
+            Player.prototype.addPoint = function()
+            {
+                // show message
+                this.points += 1;
+                this.pointString += " <span class='stars'>&#9733;</span>";
+                message = this.name + ": " + this.points.toString();
+                if (_language == "en")
+                    message += " points.<br/><br/><br/>" + this.pointString;
+                if (_language == "ko")
+                    message += " 점.<br/><br/><br/>" + this.pointString;
+                document.getElementById(this.id).innerHTML = message;
+                document.getElementById(this.id).style.display = "block";
+
+                // start time out for hiding message
+                setTimeout( function(id) { document.getElementById(id).style.display = "none";  _globalLock = false;}.bind(0, this.id), 1200 );
+            };
+
+
+            //______________________________
+            // Remove all cards that are covered
+            Player.prototype.clearUp = function()
+            {
+                for (i=0; i<this.cards.length; i++) {
+                    if (this.cards[i].state === 'suggested') {
+                        this.cards[i].remove();
+                        this.openCards--;
+                    }
+                }
+            };
+
+
+            //______________________________
+            // Player confirms his choice of number
+            Player.prototype.confirm = function(what)
+            {
+                message = "";
+                switch (what) {
+                    case 'part1':
+                    case 'part2':
+                        if (_language==="en") this.hint("Choose two numbers that add up to the number on the right and press <i>Ready</i>, or press <i>Pass</i>.");
+                        if (_language==="ko") this.hint("오른쪽 숫자가 되도록 두 숫자를 선택하고 <i>준비</i>를 누르거나, <i>패스</i>를 누르세요.");
+                        if (this !== this.nextPlayer)
+                            this.nextPlayer.hint("");
+                        for (var i=0; i<this.cards.length; i++) {
+                            this.cards[i].enable();
+                            if (this.nextPlayer !== this)
+                                this.nextPlayer.cards[i].disable();
+                        }
+                        // enable the pass button and disable the confirm button
+                        document.getElementById("button_confirm").disabled = true;
+                        document.getElementById("button_pass").disabled = false;
+                        break;
+                    case 'solution':
+                        this.hasPassed = false;
+                        if (_language==="en") this.hint("Choose a number for " + this.nextPlayer.name + ".");
+                        // Updated hint message for clarity
+                        if (_language==="ko") this.hint(this.nextPlayer.name + "을 위한 숫자를 카드를 클릭하여 선택하세요. 선택 후 '준비' 버튼을 누르세요.");
+                        var open = 0;
+                        var max = Math.round(this.cards.length / 4);
+                        for (var i=0; i<this.cards.length; i++) {
+                            if (this.cards[i].state === "open" && open < max) {
+                                this.cards[i].enable();
+                                open++;
+                            } else {
+                                this.cards[i].disable();
+                            }
+                            if (this.nextPlayer !== this) {
+                                this.nextPlayer.cards[i].disable();
+                            }
+                        }
+                        // disable the pass and confirm buttons
+                        document.getElementById("button_confirm").disabled = true;
+                        document.getElementById("button_pass").disabled = true;
+                }
+            }
+
+
+            //______________________________
+            // Displays help for the player (what to do next)
+            Player.prototype.hint = function(text)
+            {
+                document.getElementById("hint_" + this.id).innerHTML = this.name + "<br/>" + this.pointString + "<br/>" + text;
+            };
+
+
+            //______________________________
+            // Query whether player has any open cards left
+            Player.prototype.isFinished = function()
+            {
+                return this.openCards == 0;
+            }
+
+            //______________________________
+            // Pass - remove all highlights and confirm
+            Player.prototype.pass = function()
+            {
+                // update all cards
+                this.hasPassed = true;
+                for (var i=0; i<this.cards.length; i++) {
+                    this.cards[i].suggest(false);
+                }
+                // disable the pass and confirm buttons
+                document.getElementById("button_confirm").disabled = true;
+                document.getElementById("button_pass").disabled = true;
+            }
+
+
+
+            //______________________________
+            // Player writes a number into the next part of the equation
+            Player.prototype.suggest = function(what, cardId1, cardId2, cardId3)
+            {
+                if (cardId2!==false)
+                    this.cards[cardId2].suggest(false);
+                if (cardId3!==false)
+                    this.cards[cardId3].suggest(false);
+                var card = this.cards[cardId1].suggest(this);
+                if (card !== false) {
+                    switch (what) {
+                        case "part1":
+                            // update texts
+                            if (_language === "en") this.hint("Choose another number and press <i>Ready</i>, or press <i>Pass</i>.");
+                            if (_language === "ko") this.hint("다른 숫자를 선택하고 <i>준비</i>를 누르거나, <i>패스</i>를 누르세요.");
+                            // disable the confirm and enable the pass button
+                            document.getElementById("button_confirm").disabled = true;
+                            document.getElementById("button_pass").disabled = false;
+                            break;
+                        case "part2":
+                            // update texts
+                            if (_language === "en") this.hint("If you think your answer is correct, press <i>Ready</i>.");
+                            if (_language === "ko") this.hint("답이 맞다고 생각되면, <i>준비</i>를 누르세요.");
+                            // enable the pass and confirm buttons
+                            document.getElementById("button_confirm").disabled = false;
+                            document.getElementById("button_pass").disabled = false;
+                            break;
+                        case "solution":
+                            // update texts
+                            if (_language === "en") this.hint("Press <i>Ready</i> or choose a different number.");
+                            if (_language === "ko") this.hint("<i>준비</i>를 누르거나 다른 숫자를 선택하세요.");
+                            // enable the confirm and disable the pass buttons
+                            document.getElementById("button_confirm").disabled = false;
+                            document.getElementById("button_pass").disabled = true;
+                    }
+                }
+                return card;
+            };
+
+
+
+            //______________________________
+            // class for a single number card
+            // A memory card is represented by two divs with the outside one representing the card
+            // and the inside one representing the face. The face div has a class according to the
+            // type: <div class="card"><div class="digits">23</div></div>
+            // both divs have distinct IDs
+            function Card(meaning, cardIndex, rows, cols, playerId)
+            {
+                this.state = "open";
+                this.meaning = meaning; // the actual number that's on the card
+                this.faceId = cardIndex.toString() + "_" + playerId + "_face";     // the respective div id, e.g. "3_face"
+                this.index = cardIndex;
+                this.cardId = cardIndex.toString() + "_" + playerId + "_card";     // the respective div id for the card, e.g. "3_card"
+                this.string = meaning.toString();
+
+                // determine sizes for width, left, top and height
+                width = Math.floor(38.0 / cols);
+                left = (50.0 - cols*(width+0.7)) / 2.0;
+                height = Math.floor(47.0 / rows);
+                fontSize = 12 / cols;
+                lineHeight =  30 / cols;
+//                alert("width: " + width + ", left: " + left);
+                // hack for bug in Chrome on Android
+                if (navigator.userAgent.indexOf("Chrome") > -1 && navigator.userAgent.indexOf("Android") > -1) {
+                    factor = 0.86;
+                    height *= factor;
+                    fontSize *= factor;
+                    lineHeight *= factor;
+                }
+                this.html = "<div class=\"card\" id=\"" + this.cardId + "\" style=\"width:" + width.toString() + "vw; height:" + height.toString() + "vh; left:" + left.toString() + "vw;\" onClick=\"_gameHistory.suggest('" + playerId + "', " + this.index.toString() + ');\">' +
+                                "<div class=\"digits\" id=\"" + this.faceId + "\" style=\"font-size:" + fontSize.toString() + "vw; line-height:" + lineHeight.toString() + "vh;\">" +
+                                    this.string +
+                                "</div>" +
+                            "</div>";
+            }
+
+
+
+            //______________________________
+            // remove the card from the table
+            Card.prototype.remove = function()
+            {
+                this.state = "removed";
+                document.getElementById(this.cardId).style.visibility = "hidden";
+            };
+
+
+
+            //______________________________
+            // disable a card
+            Card.prototype.disable = function()
+            {
+                if (this.state === "open") {
+                    this.state = "disabled";
+                    document.getElementById(this.faceId).style.color = "#bbb";
+                }
+            };
+
+
+            //______________________________
+            // disable a card
+            Card.prototype.enable = function()
+            {
+                if (this.state === "disabled") { // don't set suggested cards back to open
+                    this.state = "open";
+                    document.getElementById(this.faceId).style.color = "#00a";
+                }
+            };
+
+
+            //______________________________
+            // highlight a card
+            Card.prototype.suggest = function(player)
+            {
+                index = false;
+                colour = false;
+                if (player===false && this.state==="suggested") {
+                    this.state = "open";
+                    colour = "#eaeaea";
+                }
+                if (player!==false && this.state==="open") {
+                    index = this.index;
+                    this.state = "suggested";
+                    colour = player.colour;
+                }
+                document.getElementById(this.faceId).style.backgroundColor = colour;
+                return index;
+            };
+
+
+            //______________________________
+            // gameHistory object, tracks open cards, removes cards and assigns points
+            // player1,2:  players
+            function GameHistory(player1, player2)
+            {
+                if (_debugMode) alert("GameHistory( player1=" + player1.toString() + ", player2=" + player2.toString() + ")");
+                this.player1 = player1;
+                this.player2 = player2;
+                if (player2) {
+                    this.player1.nextPlayer = this.player2;
+                    this.player2.nextPlayer = this.player1;
+                    this.currentPlayer = this.player1;
+                    this.nextPlayer = this.player2;
+                } else {
+                    this.player1.nextPlayer = this.player1;
+                    this.currentPlayer = this.player1;
+                    this.nextPlayer = this.player1;
+                }
+
+                // the equation: part1 + part2 = solution
+                this.part1 = false;
+                this.part2 = false;
+                this.solution = false;
+                this.nextMove = 'solution';
+                this.currentPlayer.confirm("solution");
+            }
+
+
+            //______________________________
+            // a confirm button has been clicked
+            GameHistory.prototype.confirm = function()
+            {
+                switch (this.nextMove) {
+                    case 'solution':
+                        this.nextPlayer = this.currentPlayer;
+                        this.currentPlayer = this.currentPlayer.nextPlayer;
+                        this.nextMove = 'part1';
+                        break;
+                    case 'part1':
+                    case 'part2':
+                        // calculating points for current player
+                        if (this.currentPlayer.cards[this.part1].meaning - this.currentPlayer.cards[this.part2].meaning == this.nextPlayer.cards[this.solution].meaning)
+                            this.currentPlayer.addPoint();
+                        this.nextMove = 'solution';
+                }
+                this.currentPlayer.confirm(this.nextMove);
+                this.player1.clearUp();
+                if (this.player2)
+                    this.player2.clearUp();
+                if (this.player1.isFinished() || (this.player2 && this.player2.isFinished()))
+                    this.finishGame();
+            };
+
+
+            //______________________________
+            // a pass button has been clicked
+            GameHistory.prototype.pass = function()
+            {
+                this.part1 = false;
+                this.part2 = false;
+                this.solution = false;
+                this.nextMove = "solution";
+                this.currentPlayer.pass();
+                this.currentPlayer.confirm(this.nextMove);
+                this.currentPlayer.hasPassed = true;
+                this.updateGui();
+                if (this.player1.isFinished() || (this.player2 && this.player2.isFinished()))
+                    this.finishGame();
+            }
+
+
+
+            //______________________________
+            // a card has been clicked -- make a move
+            GameHistory.prototype.suggest = function(player, cardIndex)
+            {
+                if (this.currentPlayer.id == player) {
+                    if (!_globalLock) {
+                        _globalLock = true;
+                        switch (this.nextMove) {
+                            case 'part1':
+                                this.part1 = this.currentPlayer.suggest(this.nextMove, cardIndex, this.part1, this.part2);
+                                this.part2 = false;
+                                this.updateGui();
+                                this.nextMove = 'part2';
+                                break;
+                            case 'part2':
+                                this.part2 = this.currentPlayer.suggest(this.nextMove, cardIndex, false, false);
+                                this.updateGui();
+                                this.nextMove = 'part1';
+                                break;
+                            case 'solution':
+                                this.part1 = false;
+                                this.part2 = false;
+                                this.solution = this.currentPlayer.suggest(this.nextMove, cardIndex, this.solution, false);
+                                this.updateGui();
+                        }
+                        _globalLock = false;
+                    }
+                }
+            };
+
+
+
+            //______________________________
+            // a card has been clicked -- make a move
+            GameHistory.prototype.updateGui = function()
+            {
+                // find parts
+                var part1 = false;
+                var part2 = false;
+                var solution = false;
+                if (this.part1===false && this.part2===false) {
+                    part1 = this.part1!==false ? this.nextPlayer.cards[this.part1].meaning : false;
+                    part2 = this.part2!==false ? this.nextPlayer.cards[this.part2].meaning : false;
+                    solution = this.solution!==false ? this.currentPlayer.cards[this.solution].meaning : false;
+                }
+                else {
+                    part1 = this.part1!==false ? this.currentPlayer.cards[this.part1].meaning : false;
+                    part2 = this.part2!==false ? this.currentPlayer.cards[this.part2].meaning : false;
+                    solution = this.solution!==false ? this.nextPlayer.cards[this.solution].meaning : false;
+                }
+
+                // assemble and write equation
+                document.getElementById("equation").innerHTML = "<span class='red'>" + (part1!==false ? part1 : "&nbsp;&nbsp;") + "</span>" +  " - " + "<span class='green'>" + (part2!==false ? part2 : "&nbsp;&nbsp;") + "</span>" + " = " + "<span class='blue'>"+ (solution!==false ? solution : "&nbsp;&nbsp;") + "</span>";
+
+                // assemble part1 and part2 dots
+                solution = solution!==false ? solution : 0;
+                part2 = this.part2!==false ? part2 : 0;
+                partString =  "<span class='blue'>";
+                for (var i=0; i < solution+part2; i++) {
+                    if (i === solution) {
+                        partString += "</span><span class='green'>";
+                    }
+                    if (i % 5 === 0)
+                        partString += "&nbsp;";
+                    if (i % 10 === 0)
+                        partString += "&nbsp;";
+                    partString += "&#8226;";
+                }
+                partString += "</span><br/>";
+
+                // assemble solution dots
+                part1 = this.part1!==false ? part1 : 0;
+                solutionString = "<span class='red'>";
+                for (var i=0; i<part1; i++) {
+                    if (i % 5 === 0)
+                        solutionString += "&nbsp;";
+                    if (i % 10 === 0)
+                        solutionString += "&nbsp;";
+                    solutionString += "&#8226;";
+                }
+                solutionString += "</span>";
+                document.getElementById("helper").innerHTML = partString + solutionString;
+            };
+
+
+
+            //______________________________
+            // start a new game --
+            // create a new gameHistory, create new cards, shuffle them
+            // and put them face down on the table
+            function newGame(max)
+            {
+                if (_debugMode) alert("newGame(max=" + max.toString() + ")");
+
+                // read player 2 (if missing, we're in single player mode)
+                name = document.getElementById("name2_" + _language).value.trim();
+                colour = document.getElementById("name2_" + _language).style.backgroundColor;
+                amount = max;
+                if (name=="") {
+                    player2 = false;
+                    single = true;
+                    document.getElementById("table_player1").style.width = "70vw";
+                    document.getElementById("table_player1").style.left = "10vw";
+                    amount = Math.floor(2*max/3)*3; // the largest multiple of three that is smaller than twice max
+                } else
+                    player2 = new Player(name, colour, "player2", max, amount);
+
+                // read player 1
+                name = document.getElementById("name1_" + _language).value.trim();
+                colour = document.getElementById("name1_" + _language).style.backgroundColor;
+                player1 = new Player(name, colour, "player1", max, amount);
+
+                // create history
+                helperSize = 90 / max;
+                document.getElementById("helper").style.fontSize = helperSize.toString()+"vw";
+                _gameHistory = null;
+                _gameHistory = new GameHistory(player1, player2);
+            }
+
+
+            //______________________________
+            // start a new game --
+            // create a new gameHistory, create new cards, shuffle them
+            // and put them face down on the table
+            GameHistory.prototype.finishGame = async function()
+            {
+                resultsTable = "<table>"
+                resultsTable += "<tr><td>&nbsp;&nbsp;&nbsp;" + this.player1.name
+                + "&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;" + this.player1.points
+                + "&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;" + this.player1.pointString
+                + "&nbsp;&nbsp;&nbsp;</td></tr>";
+                if (this.player2) {
+                    resultsTable += "<tr><td>&nbsp;&nbsp;&nbsp;" + this.player2.name
+                    + "&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;" + this.player2.points
+                    + "&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;" + this.player2.pointString
+                    + "&nbsp;&nbsp;&nbsp;</td></tr>";
+                }
+                resultsTable += "</table>";
+                document.getElementById('results_' + _language).innerHTML = resultsTable;
+                proceed("table", "finish_" + _language);
+            }
+
+
+            //______________________________
+            // go to full screen
+            function goFullScreen()
+            {
+                if (_quitFullScreen) {
+                    clearTimeout(_quitFullScreen);
+                    _quitFullScreen = false;
+                } else {
+                    if (document.documentElement.requestFullScreen) {
+                        document.documentElement.requestFullScreen();
+                    } else if (document.documentElement.mozRequestFullScreen) {
+                        document.documentElement.mozRequestFullScreen();
+                    } else if (document.documentElement.webkitRequestFullScreen) {
+                        document.documentElement.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
+                    } else if (document.documentElement.msRequestFullScreen) {
+                        document.documentElement.msRequestFullScreen();
+                    }
+                }
+            }
+
+
+            //______________________________
+            // stop full screen
+            function quitFullScreen()
+            {
+                if (document.cancelFullScreen) {
+                    document.cancelFullScreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitCancelFullScreen) {
+                    document.webkitCancelFullScreen();
+                } else if (document.msCancelFullScreen) {
+                    document.msCancelFullScreen();
+                }
+                _quitFullScreen = false;
+            }
+
+
+
+            //______________________________
+            // start the session
+            function startSession(max, language)
+            {
+                _language = language;
+                if (_language==="en") document.getElementById("button_confirm").innerHTML = "Ready";
+                if (_language==="ko") document.getElementById("button_confirm").innerHTML = "준비";
+                if (_language==="en") document.getElementById("button_pass").innerHTML = "Pass";
+                if (_language==="ko") document.getElementById("button_pass").innerHTML = "패스";
+                goFullScreen();
+                newGame(max);
+            }
+
+
+            //______________________________
+            // hides the first id and shows the second
+            function proceed(hide, show)
+            {
+                document.getElementById(hide).style.display = "none";
+                document.getElementById(show).style.display = "block";
+            }
+
+            //-->
+        </script>
+
+    </head>
+    <body>
+        <!-- Card table -->
+        <div id="table" class="table">
+            <div id="hint_player1" style="height:36vh; font-size:2.5vh;"></div>
+            <div class="center-game-area"> <!-- Added class for central content -->
+                <div id="equation" style="width:100%; height:14vh;font-size:10vh; text-align: center;"></div>
+                <div style="width:100%; height:10vh; line-height:4vh; text-align: center;">
+                    <div id="helper" style="display: inline-block; text-align: left; font-size: 8vh;"></div>
+                </div>
+                <!-- Adjusted container for buttons to prevent overlapping -->
+                <div class="button-container">
+                    <button id="button_confirm" onClick="_gameHistory.confirm()" disabled>Ready</button>
+                    <button id="button_pass" onClick="_gameHistory.pass()" disabled>Pass</button>
+                </div>
+            </div>
+            <div id="hint_player2" style="height:36vh;font-size:2.5vh;"></div>
+            <div id="table_player1" style="height: 60vh; display: none;"></div>
+            <div id="table_player2" style="height: 60vh; display: none;"></div>
+        </div>
+
+        <!-- Language chose -->
+        <div id="language" class="message" style="display:block;">
+                <button onClick="proceed('language', 'intro_en');" style="clear:left;">영어</button>
+                <button onClick="proceed('language', 'intro_ko');" style="clear:left;">한국어</button>
+        </div>
+
+        <!-- English workflow -->
+        <div id="intro_en" class="message">
+            <b>Game of Differences</b> <br>
+            Challenge your opponent to a game of differences! Players play in turns.
+            <ul>
+            <li>The first player chooses a number and presses <i>Ready</i>.</li>
+            <li>The second player chooses two numbers that differ by the number from the first player and presses <i>Ready</i>. If the equation is correct, the second player gets a point.</li>
+            <li>The second player chooses a number for the first player and presses <i>Ready</i>. Then the first player finds two numbers to complete the equation.</li>
+            <li>If there are no numbers available that would complete the difference, the player presses <i>Pass</i>.</li>
+            </ul>
+            If one player has no numbers left or if both players pass, the game is finished.
+            The winner is the player with most points.<br/>
+            <br/><br/>
+            If you enter only one name you'll be playing on your own. Try to choose your numbers in a clever way and use up all your cards without having to pass once.
+            <div>
+                <button onClick="proceed('intro_en', 'names_en');">다음</button> or <button onClick="proceed('intro_en', 'language');">뒤로</button>
+            </div>
+        </div>
+        <div id="names_en" class="message">
+            Enter two players
+            <br/>
+            <input id="name1_en" type="text" class="text" style="clear:left; background-color: #fff090"></input>
+            <input id="name2_en" type="text" class="text" style="clear:left; background-color: #b0fff0"></input>
+            <br/><br/>
+            <div>
+                <button onClick="proceed('names_en', 'start_en');">다음</button> or <button onClick="proceed('names_en', 'intro_en');">뒤로</button>
+            </div>
+        </div>
+        <div id="start_en" class="message">
+            Choose your game size and start
+            <br/>
+            <button onClick="startSession(10,'en'); proceed('start_en', 'table');" style="clear:left;">All numbers up to 10</button><br/>
+            <button onClick="startSession(15,'en'); proceed('start_en', 'table');" style="clear:left;">All numbers up to 15</button><br/>
+            <button onClick="startSession(20,'en'); proceed('start_en', 'table');" style="clear:left;">All numbers up to 20</button><br/>
+            <button onClick="startSession(30,'en'); proceed('start_en', 'table');" style="clear:left;">All numbers up to 30</button><br/>
+            <button onClick="startSession(50,'en'); proceed('start_en', 'table');" style="clear:left;">All numbers up to 50</button>
+            <br/><br/>
+            <div>
+                Or <button onClick="proceed('start_en', 'names_en');">뒤로</button>
+            </div>
+        </div>
+        <div id="finish_en" class="message">
+            Final Results
+            <br/><br/>
+            <span id="results_en"></span>
+            <br/><br/>
+            <button onClick="proceed('finish_en', 'names_en');" style="clear:left;">새 게임</button>
+            <br/>
+        </div>
+
+        <!-- Korean workflow -->
+        <div id="intro_ko" class="message">
+            <b>차이점 게임</b> <br>
+            상대방에게 차이점 게임을 도전하세요! 플레이어는 번갈아 가며 플레이합니다.
+            <ul>
+            <li>첫 번째 플레이어는 숫자를 선택하고 <i>준비</i>를 누릅니다.</li>
+            <li>두 번째 플레이어는 첫 번째 플레이어의 숫자와 차이가 나는 두 숫자를 선택하고 <i>준비</i>를 누릅니다. 계산이 맞으면 두 번째 플레이어가 점수를 얻습니다.</li>
+            <li>두 번째 플레이어는 첫 번째 플레이어를 위한 숫자를 선택하고 <i>준비</i>를 누릅니다. 그러면 첫 번째 플레이어가 계산을 완성할 두 숫자를 찾습니다.</li>
+            <li>차이점을 완성할 수 있는 숫자가 없으면 플레이어는 <i>패스</i>를 누릅니다.</li>
+            </ul>
+            한 플레이어가 남은 카드가 없거나 두 플레이어가 연속으로 패스하면 게임이 종료됩니다.
+            가장 많은 점수를 얻은 플레이어가 승자입니다.<br/>
+            <br/><br/>
+            이름을 하나만 입력하면 혼자 플레이하게 됩니다. 한 번도 패스하지 않고 모든 카드를 소진하도록 영리하게 숫자를 선택해 보세요.
+            <div>
+                <button onClick="proceed('intro_ko', 'names_ko');">다음</button> 또는 <button onClick="proceed('intro_ko', 'language');">뒤로</button>
+            </div>
+        </div>
+        <div id="names_ko" class="message">
+            한두 명의 플레이어를 입력하세요
+            <br/>
+            <input id="name1_ko" type="text" class="text" style="clear:left; background-color: #fff090"></input>
+            <input id="name2_ko" type="text" class="text" style="clear:left; background-color: #b0fff0"></input>
+            <br/><br/>
+            <div>
+                <button onClick="proceed('names_ko', 'start_ko');">다음</button> 또는 <button onClick="proceed('names_ko', 'intro_ko');">뒤로</button>
+            </div>
+        </div>
+        <div id="start_ko" class="message">
+            게임 크기를 선택하세요
+            <br/>
+            <button onClick="startSession(10,'ko'); proceed('start_ko', 'table');" style="clear:left;">모든 숫자 10까지</button><br/>
+            <button onClick="startSession(15,'ko'); proceed('start_ko', 'table');" style="clear:left;">모든 숫자 15까지</button><br/>
+            <button onClick="startSession(20,'ko'); proceed('start_ko', 'table');" style="clear:left;">모든 숫자 20까지</button><br/>
+            <button onClick="startSession(30,'ko'); proceed('start_ko', 'table');" style="clear:left;">모든 숫자 30까지</button><br/>
+            <button onClick="startSession(50,'ko'); proceed('start_ko', 'table');" style="clear:left;">모든 숫자 50까지</button>
+            <br/><br/>
+            <div>
+                또는 <button onClick="proceed('start_ko', 'names_ko');">뒤로</button>
+            </div>
+        </div>
+        <div id="finish_ko" class="message">
+            결과
+            <br/><br/>
+            <span id="results_ko"></span>
+            <br/><br/>
+            <button onClick="proceed('finish_ko', 'names_ko');" style="clear:left;">새 게임</button>
+            <br/>
+        </div>
+
+        <!-- Player message boxes -->
+        <div id="player1" class="player"></div>
+        <div id="player2" class="player"></div>
+    </body>
 </html>
